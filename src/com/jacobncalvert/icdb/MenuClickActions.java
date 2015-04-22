@@ -79,7 +79,8 @@ public class MenuClickActions implements ActionListener
 	
 	private void exportAsSQLAction()
 	{
-		
+		Exporter exporter = new SQLExporter();
+		exporter.run();
 	}
 	
 	

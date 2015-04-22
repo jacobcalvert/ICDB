@@ -55,7 +55,7 @@ public class DatabaseObject {
 	{
 		return query("SELECT * FROM items;");
 	}
-
+	
 	public ResultSet getAllMetaInfo(Integer item_id)
 	{
 		return query(String.format("SELECT * FROM items_meta WHERE item_id = '%d';", item_id));

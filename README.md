@@ -28,6 +28,9 @@ Use
 When you run the app, you are introduced to the main window. This window contains a searchable, sortable table of
 all the items in your ICDB storage.
 
+### Sorting the table in the main window
+Click the header by which you wish to sort.
+
 ### Adding a new item
 To add a new item, click Items->New Item (or alternatively ctrl-n) and the New Item Window will appear. Fill in those
 values and click Save. The window will disappear and your new item will show up in the table.
@@ -53,6 +56,7 @@ Navigate to ICDB->Export as...->[Your type]. Select a save location and click OK
 ### Viewing statistics
 The app will calculate statistics about the items in your ICDB. Navigate to Items->Statistics and you'll be shown 
 a small window with a summary of the item information in you storage. 
+
 
 
 Future

@@ -361,19 +361,16 @@ public class EditItemWindow extends JFrame
 		String title = txtTitle.getText(), desc = txtDesc.getText(), partnum = txtPartNum.getText(),
 				unitprice = txtUnitPrice.getText(), website = txtWebsite.getText(), manufacturer = cmbManufacturer.getSelectedItem().toString(),
 				category = cmbCategory.getSelectedItem().toString(), qty = txtQty.getText();
-		String sql = String.format("UPDATE items SET title='%s', description='%s', part_id='%s', "
-				+ "unit_price='%s', url='%s', manufacturer='%s', category='%s', qty='%s' WHERE id='%d'", title, desc, partnum,
-				unitprice, website, manufacturer, category, qty, this.itemID);
-		DatabaseController.instance().getDB().update(sql);
+		DatabaseController.instance().getDB().update(this.itemID, title,desc, category,
+				manufacturer,partnum,website, Float.parseFloat(unitprice),
+				Integer.parseInt(qty));
 		
-		DatabaseController.instance().getDB().update(String.format("DELETE FROM items_meta WHERE item_id = '%s'", this.itemID));
+		DatabaseController.instance().getDB().deleteItemMeta(this.itemID);
 		
 		for(int i = 0; i < tableModel.getRowCount(); i++)
 		{
 			String key = (String)tableModel.getValueAt(i, 0), value = (String)tableModel.getValueAt(i, 1);
-			String sql2 = String.format("INSERT INTO items_meta(item_id, meta_key, meta_value) VALUES("
-					+ "'%d','%s', '%s');", this.itemID, key, value);
-			DatabaseController.instance().getDB().insert(sql2);
+			DatabaseController.instance().getDB().insertMeta(this.itemID, key, value);
 		}
 			
 	

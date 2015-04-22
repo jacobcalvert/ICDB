@@ -318,19 +318,17 @@ public class NewItemWindow extends JFrame
 		String title = txtTitle.getText(), desc = txtDesc.getText(), partnum = txtPartNum.getText(),
 				unitprice = txtUnitPrice.getText(), website = txtWebsite.getText(), manufacturer = cmbManufacturer.getSelectedItem().toString(),
 				category = cmbCategory.getSelectedItem().toString(), qty = txtQty.getText();
-		
-		String sql = String.format("INSERT INTO items(qty,title,description,part_id,unit_price,url,manufacturer,category) VALUES("
-				+ "'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');",qty, title, desc, partnum, unitprice, website, manufacturer, category);
-	
-		long id = DatabaseController.instance().getDB().insert(sql);
+			
+		long id = DatabaseController.instance().getDB().insert(title,desc, category,
+				manufacturer,partnum,website, Float.parseFloat(unitprice),
+				Integer.parseInt(qty));
 		if(id > 0)
 		{
 			for(int i = 0; i < tableModel.getRowCount(); i++)
 			{
 				String key = (String)tableModel.getValueAt(i, 0), value = (String)tableModel.getValueAt(i, 1);
-				String sql2 = String.format("INSERT INTO items_meta(item_id, meta_key, meta_value) VALUES("
-						+ "'%d','%s', '%s');", id, key, value);
-				DatabaseController.instance().getDB().insert(sql2);
+			
+				DatabaseController.instance().getDB().insertMeta((int) id, key, value);
 			}
 			
 		}

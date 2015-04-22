@@ -18,14 +18,27 @@ public class DatabaseObject {
 	
 	public ResultSet search(String term)
 	{
-		String sql = String.format("SELECT * FROM items WHERE title LIKE '%%%s%%' OR description LIKE '%%%s%%' OR "
-				+ "category LIKE '%%%s%%' OR manufacturer LIKE '%%%s%%' OR part_id LIKE '%%%s%%';", term, term, term, term, term);
-		
-		return query(sql);
+		term = "%"+term+"%";
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM items WHERE title LIKE ? OR description LIKE ? OR "
+					+ "category LIKE ? OR manufacturer LIKE ? OR part_id LIKE ?;");
+			stmt.setString(1, term);
+			stmt.setString(2, term);
+			stmt.setString(3, term);
+			stmt.setString(4, term);
+			stmt.setString(5, term);
+			return stmt.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public ResultSet query(String sql)
 	{
+		sql = sql.replaceAll("'", "\'");
 		Statement stmt;
 		try {
 			stmt = connection.createStatement();
@@ -39,69 +52,193 @@ public class DatabaseObject {
 		return null;
 	}
 	
-	public void update(String sql)
+	public void update(int id,
+			String title,
+			String desc,
+			String category,
+			String manufacturer,
+			String part_id,
+			String url,
+			float unit_price,
+			int qty)
 	{
-		Statement stmt;
+		PreparedStatement stmt;
 		try {
-			stmt = connection.createStatement();
-			stmt.executeUpdate(sql);
+			stmt = connection.prepareStatement("UPDATE items SET title=?,description=?,category=?,manufacturer=?,"
+					+ "part_id=?,url=?,unit_price=?,qty=? WHERE id=?");
+			int c = 1;
+			stmt.setString(c++, title);
+			stmt.setString(c++, desc);
+			stmt.setString(c++, category);
+			stmt.setString(c++, manufacturer);
+			stmt.setString(c++, part_id);
+			stmt.setString(c++, url);
+			stmt.setFloat(c++, unit_price);
+			stmt.setInt(c++, qty);
+			stmt.setInt(c++, id);
+			stmt.execute();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public ResultSet getAllItems()
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM items;");
+			
+			return stmt.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSet getAllMetaInfo(Integer item_id)
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM items WHERE id=?;");
+			stmt.setInt(1, item_id);
+			return stmt.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSet getAllCategories()
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("SELECT DISTINCT category FROM items;");
+			return stmt.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public ResultSet getAllManufacturers()
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("SELECT DISTINCT manufacturer FROM items;");
+			return stmt.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSet getItem(int id)
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM items WHERE id=?");
+			stmt.setInt(1, id);
+			return stmt.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSet getMeta(int id)
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM items_meta WHERE item_id=?");
+			stmt.setInt(1, id);
+			return stmt.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public void deleteItem(int id)
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("DELETE FROM items WHERE id=?");
+			stmt.setInt(1, id);
+			stmt.execute();
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
 		}
 	}
 	
-	public ResultSet getAllItems()
+	public void deleteItemMeta(int id)
 	{
-		return query("SELECT * FROM items;");
-	}
-	
-	public ResultSet getAllMetaInfo(Integer item_id)
-	{
-		return query(String.format("SELECT * FROM items_meta WHERE item_id = '%d';", item_id));
-	}
-	
-	public ResultSet getAllCategories()
-	{
-		return query("SELECT DISTINCT category FROM items;");
-	}
-	public ResultSet getAllManufacturers()
-	{
-		return query("SELECT DISTINCT manufacturer FROM items;");
-	}
-	
-	public ResultSet getItem(int id)
-	{
-		return query(String.format("SELECT * FROM items WHERE id='%d'", id));
-	}
-	public ResultSet getMeta(int id)
-	{
-		return query(String.format("SELECT * FROM items_meta WHERE item_id='%d'", id));
-	}
-	
-	public void deleteItem(int id)
-	{
-		update(String.format("DELETE FROM items WHERE id='%d';", id));
-		update(String.format("DELETE FROM items_meta WHERE item_id='%d';", id));
-		ICDB.update();
-		
-	}
-	
-	public long insert(String sql)
-	{
-		Statement stmt;
+		PreparedStatement stmt;
 		try {
-			stmt = connection.createStatement();
-			stmt.execute(sql);
-			ResultSet set = stmt.getGeneratedKeys();
-			if(set.next())
+			stmt = connection.prepareStatement("DELETE FROM items_meta WHERE id=?");
+			stmt.setInt(1, id);
+			stmt.execute();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	public long insert(String title,
+			String desc,
+			String category,
+			String manufacturer,
+			String part_id,
+			String url,
+			float unit_price,
+			int qty)
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("INSERT INTO items(qty,title,description,part_id,unit_price,url,manufacturer,category) VALUES("
+				+ "?,?,?,?,?,?,?,?)");
+			int c = 1;
+			stmt.setString(c++, title);
+			stmt.setString(c++, desc);
+			stmt.setString(c++, category);
+			stmt.setString(c++, manufacturer);
+			stmt.setString(c++, part_id);
+			stmt.setString(c++, url);
+			stmt.setFloat(c++, unit_price);
+			stmt.setInt(c++, qty);
+			stmt.execute();
+			ResultSet rs = stmt.getGeneratedKeys();
+			if(rs.next())
 			{
-				return set.getLong(1);
+				long id = rs.getLong(1);
+				return id;
 			}
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
 		}
 		return -1;
+	}
+	
+	public void insertMeta(int item_id, String k, String v)
+	{
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("INSERT INTO items_meta(item_id, meta_key, meta_value) VALUES(?,?,?);");
+			stmt.setInt(1, item_id);
+			stmt.setString(2, k);
+			stmt.setString(3, v);
+			stmt.execute();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
 	}
 }
